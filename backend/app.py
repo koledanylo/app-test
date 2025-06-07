@@ -30,7 +30,7 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 @app.route('/upload', methods=['POST'])
 def upload_file():
     try:
-        print("📥 Upload request received")
+        print("📤 Upload request received")
 
         if 'file' not in request.files:
             print("⚠️ No file part in request")
@@ -42,11 +42,12 @@ def upload_file():
             print("⚠️ Empty filename received")
             return jsonify({'error': 'No selected file'}), 400
 
-        # Upload to Cloudinary with correct resource type
+        # ✅ Upload to Cloudinary with public access
         upload_result = cloudinary.uploader.upload(
             file,
-            resource_type="auto",     # Allows PDF, images, etc.
-            type="upload"             # Makes the file public by default
+            resource_type="auto",     # Allows PDFs, images, videos
+            type="upload",
+            access_mode="public"      # 👈 This makes it publicly accessible
         )
 
         file_url = upload_result['secure_url']
@@ -60,7 +61,7 @@ def upload_file():
     except Exception as e:
         import traceback
         traceback.print_exc()
-        print("❌ Upload failed:", str(e))
+        print("❌ Upload failed:", e)
         return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 
