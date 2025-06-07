@@ -7,10 +7,10 @@ import cloudinary.uploader
 import smtplib
 from email.mime.text import MIMEText
 
-# Load environment variables
+# Load environment variables from .env
 load_dotenv()
 
-# Initialize app ✅
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
@@ -21,10 +21,11 @@ cloudinary.config(
     api_secret=os.getenv("CLOUDINARY_API_SECRET")
 )
 
-# Email config
+# Email configuration
 EMAIL_SENDER = os.getenv("EMAIL_SENDER")
 EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
 
 # Upload endpoint
 @app.route('/upload', methods=['POST'])
@@ -42,34 +43,19 @@ def upload_file():
             print("⚠️ Empty filename received")
             return jsonify({'error': 'No selected file'}), 400
 
-        # Upload endpoint
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    try:
-        print("📤 Upload request received")
-
-        if 'file' not in request.files:
-            print("⚠️ No file part in request")
-            return jsonify({'error': 'No file part'}), 400
-
-        file = request.files['file']
-
-        if file.filename == '':
-            print("⚠️ Empty filename received")
-            return jsonify({'error': 'No selected file'}), 400
-
-        # ✅ Upload to Cloudinary with public access
+        # ✅ Upload to Cloudinary as a raw (non-image) file
         upload_result = cloudinary.uploader.upload(
             file,
-            resource_type="raw",         # 👈 Required for PDFs
-            type="upload",               # Optional but standard
-            access_mode="public",        # 👈 Ensures public delivery
-            format="pdf"                 # 👈 Optional: Ensures PDF extension
+            resource_type="raw",         # Required for PDFs and other files
+            type="upload",               # Default type
+            access_mode="public",        # Ensure file is publicly accessible
+            format="pdf"                 # Optional: force PDF extension
         )
 
         file_url = upload_result['url']
         print(f"✅ File uploaded successfully: {file_url}")
 
+        # Send notification email
         send_email(file.filename, file_url)
         print("📧 Email notification sent")
 
@@ -82,7 +68,7 @@ def upload_file():
         return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 
-
+# Send email with link
 def send_email(filename, file_url):
     subject = "New File Uploaded"
     body = f"A new file was uploaded: {filename}\n\nDownload it here: {file_url}"
@@ -96,7 +82,8 @@ def send_email(filename, file_url):
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         server.send_message(msg)
 
-# Entry point
+
+# Start Flask app
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
