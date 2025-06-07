@@ -50,7 +50,7 @@ def upload_file():
             access_mode="public"      # 👈 This makes it publicly accessible
         )
 
-        file_url = upload_result['secure_url']
+        file_url = upload_result['url']
         print(f"✅ File uploaded successfully: {file_url}")
 
         send_email(file.filename, file_url)
