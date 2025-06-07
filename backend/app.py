@@ -10,6 +10,10 @@ from email.mime.text import MIMEText
 # Load environment variables
 load_dotenv()
 
+# Initialize app ✅
+app = Flask(__name__)
+CORS(app)
+
 # Configure Cloudinary
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
@@ -22,7 +26,7 @@ EMAIL_SENDER = os.getenv("EMAIL_SENDER")
 EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
-# Initialize app
+# Upload endpoint
 @app.route('/upload', methods=['POST'])
 def upload_file():
     try:
@@ -65,6 +69,7 @@ def send_email(filename, file_url):
         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
         server.send_message(msg)
 
+# Entry point
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
