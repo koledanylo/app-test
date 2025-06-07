@@ -52,8 +52,10 @@ def upload_file():
         return jsonify({'message': 'Success', 'url': file_url})
 
     except Exception as e:
-        print("❌ Upload failed:", e)
-        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+    import traceback
+    traceback.print_exc()
+    print("❌ Upload failed:", e)
+    return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 
 def send_email(filename, file_url):
