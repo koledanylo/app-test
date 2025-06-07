@@ -42,14 +42,30 @@ def upload_file():
             print("⚠️ Empty filename received")
             return jsonify({'error': 'No selected file'}), 400
 
+        # Upload endpoint
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    try:
+        print("📤 Upload request received")
+
+        if 'file' not in request.files:
+            print("⚠️ No file part in request")
+            return jsonify({'error': 'No file part'}), 400
+
+        file = request.files['file']
+
+        if file.filename == '':
+            print("⚠️ Empty filename received")
+            return jsonify({'error': 'No selected file'}), 400
+
         # ✅ Upload to Cloudinary with public access
-upload_result = cloudinary.uploader.upload(
-    file,
-    resource_type="raw",         # 👈 Required for PDFs
-    type="upload",               # Optional but standard
-    access_mode="public",        # 👈 Ensures public delivery
-    format="pdf"                 # 👈 Optional: Ensures PDF extension
-)
+        upload_result = cloudinary.uploader.upload(
+            file,
+            resource_type="raw",         # 👈 Required for PDFs
+            type="upload",               # Optional but standard
+            access_mode="public",        # 👈 Ensures public delivery
+            format="pdf"                 # 👈 Optional: Ensures PDF extension
+        )
 
         file_url = upload_result['url']
         print(f"✅ File uploaded successfully: {file_url}")
