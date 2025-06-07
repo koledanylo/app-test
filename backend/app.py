@@ -33,29 +33,36 @@ def upload_file():
         print("📥 Upload request received")
 
         if 'file' not in request.files:
-            print("⚠️ No file part")
+            print("⚠️ No file part in request")
             return jsonify({'error': 'No file part'}), 400
 
         file = request.files['file']
+
         if file.filename == '':
-            print("⚠️ Empty filename")
+            print("⚠️ Empty filename received")
             return jsonify({'error': 'No selected file'}), 400
 
-        upload_result = cloudinary.uploader.upload(file)
-        file_url = upload_result['secure_url']
+        # Upload to Cloudinary with correct resource type
+        upload_result = cloudinary.uploader.upload(
+            file,
+            resource_type="auto",     # Allows PDF, images, etc.
+            type="upload"             # Makes the file public by default
+        )
 
-        print("✅ Uploaded to Cloudinary:", file_url)
+        file_url = upload_result['secure_url']
+        print(f"✅ File uploaded successfully: {file_url}")
 
         send_email(file.filename, file_url)
-        print("📧 Email sent")
+        print("📧 Email notification sent")
 
         return jsonify({'message': 'Success', 'url': file_url})
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        print("❌ Upload failed:", e)
+        print("❌ Upload failed:", str(e))
         return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+
 
 
 def send_email(filename, file_url):

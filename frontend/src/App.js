@@ -1,48 +1,83 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import './index.css';
 
 function App() {
   const [file, setFile] = useState(null);
-  const [link, setLink] = useState('');
-  const [status, setStatus] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [error, setError] = useState(null);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
-    setLink('');
-    setStatus('');
+    setError(null);
   };
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      setError('Please select a file first.');
+      return;
+    }
 
     const formData = new FormData();
     formData.append('file', file);
 
+    setUploading(true);
+    setError(null);
+
     try {
-      setStatus('Uploading...');
-      const res = await axios.post('https://app-test-lha5.onrender.com/upload', formData);
-      setLink(res.data.link);
-      setStatus('Upload successful!');
+      const response = await fetch('https://app-test-lha5.onrender.com/upload', {
+  method: 'POST',
+  body: formData,
+});
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const newEntry = {
+          url: data.url,
+          name: file.name,
+          time: new Date().toLocaleString()
+        };
+        setUploadedFiles([newEntry, ...uploadedFiles]);
+        setFile(null);
+      } else {
+        setError(data.error || 'Upload failed.');
+      }
     } catch (err) {
-      setStatus('Upload failed.');
       console.error(err);
+      setError('Something went wrong.');
+    } finally {
+      setUploading(false);
     }
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
       <h2>Upload a File</h2>
       <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload} style={{ marginLeft: '1rem' }}>Upload</button>
+      <button onClick={handleUpload} disabled={uploading} style={{ marginLeft: '1rem' }}>
+        {uploading ? 'Uploading...' : 'Upload'}
+      </button>
+      {error && <p style={{ color: 'red' }}>❌ {error}</p>}
+      <br />
 
-      <div style={{ marginTop: '1rem' }}>
-        {status && <p>{status}</p>}
-        {link && (
-          <p>
-            Download Link: <a href={link} target="_blank" rel="noreferrer">{link}</a>
-          </p>
-        )}
-      </div>
+      {uploadedFiles.length > 0 && (
+        <div style={{ marginTop: '2rem' }}>
+          <h3>Uploaded Files</h3>
+          <ul>
+            {uploadedFiles.map((file, index) => (
+              <li key={index}>
+                <a href={file.url} target="_blank" rel="noopener noreferrer">
+                  {file.name}
+                </a>{' '}
+                <span style={{ color: 'gray', fontSize: '0.9em' }}>
+                  ({file.time})
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
