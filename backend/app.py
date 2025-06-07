@@ -43,12 +43,13 @@ def upload_file():
             return jsonify({'error': 'No selected file'}), 400
 
         # ✅ Upload to Cloudinary with public access
-        upload_result = cloudinary.uploader.upload(
-            file,
-            resource_type="raw",     # Allows PDFs, images, videos
-            type="upload",
-            access_mode="public"      # 👈 This makes it publicly accessible
-        )
+upload_result = cloudinary.uploader.upload(
+    file,
+    resource_type="raw",         # 👈 Required for PDFs
+    type="upload",               # Optional but standard
+    access_mode="public",        # 👈 Ensures public delivery
+    format="pdf"                 # 👈 Optional: Ensures PDF extension
+)
 
         file_url = upload_result['url']
         print(f"✅ File uploaded successfully: {file_url}")
