@@ -23,33 +23,34 @@ EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
 # Initialize app
-app = Flask(__name__)
-CORS(app)
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     try:
-        print("📥 Received upload request")
+        print("📥 Upload request received")
 
         if 'file' not in request.files:
+            print("⚠️ No file part")
             return jsonify({'error': 'No file part'}), 400
 
         file = request.files['file']
         if file.filename == '':
+            print("⚠️ Empty filename")
             return jsonify({'error': 'No selected file'}), 400
 
-        # Upload to Cloudinary
         upload_result = cloudinary.uploader.upload(file)
         file_url = upload_result['secure_url']
 
-        # Send email
-        send_email(file.filename, file_url)
+        print("✅ Uploaded to Cloudinary:", file_url)
 
-        return jsonify({'message': 'File uploaded successfully', 'url': file_url})
+        send_email(file.filename, file_url)
+        print("📧 Email sent")
+
+        return jsonify({'message': 'Success', 'url': file_url})
 
     except Exception as e:
         print("❌ Upload failed:", e)
         return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
+
 
 def send_email(filename, file_url):
     subject = "New File Uploaded"
