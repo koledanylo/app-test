@@ -28,6 +28,7 @@ CORS(app)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    print("Received upload request") 
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
 
