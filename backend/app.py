@@ -46,7 +46,7 @@ def upload_file():
         # ✅ Upload to Cloudinary as a raw (non-image) file
         upload_result = cloudinary.uploader.upload(
             file,
-            resource_type="raw",         # Required for PDFs and other files
+            resource_type="auto",         # Required for PDFs and other files
             type="upload",               # Default type
             access_mode="public",        # Ensure file is publicly accessible
             format="pdf"                 # Optional: force PDF extension
