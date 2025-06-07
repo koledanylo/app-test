@@ -45,7 +45,7 @@ def upload_file():
         # ✅ Upload to Cloudinary with public access
         upload_result = cloudinary.uploader.upload(
             file,
-            resource_type="auto",     # Allows PDFs, images, videos
+            resource_type="raw",     # Allows PDFs, images, videos
             type="upload",
             access_mode="public"      # 👈 This makes it publicly accessible
         )
