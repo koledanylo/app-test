@@ -28,25 +28,28 @@ CORS(app)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    print("Received upload request") 
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-
     try:
+        print("📥 Received upload request")
+
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'}), 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+
         # Upload to Cloudinary
         upload_result = cloudinary.uploader.upload(file)
         file_url = upload_result['secure_url']
 
-        # Send the email
+        # Send email
         send_email(file.filename, file_url)
 
         return jsonify({'message': 'File uploaded successfully', 'url': file_url})
+
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print("❌ Upload failed:", e)
+        return jsonify({'error': 'Internal server error', 'details': str(e)}), 500
 
 def send_email(filename, file_url):
     subject = "New File Uploaded"
